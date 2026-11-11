@@ -2,36 +2,49 @@
 <?php
 require_once "connect.php";
 
-// Chi cho phep xoa bang POST
+// Chi chap nhan yeu cau POST
 if ($_SERVER["REQUEST_METHOD"] !== "POST") {
     header("Location: index.php");
     exit;
 }
 
-// Lay ma giang vien
-$id = trim($_POST["id"] ?? "");
+// Nhan ma giang vien
+// Ho tro ca IDGV va id
+$id = trim($_POST["IDGV"] ?? $_POST["id"] ?? "");
 
-if ($id == "") {
-    die("Khong tim thay ma giang vien!");
+if ($id === "") {
+    die("Loi: Khong nhan duoc ma giang vien can xoa!");
 }
 
-// Tim thong tin giang vien
+// Lay thong tin anh truoc khi xoa
 $sql = "SELECT Image FROM GiangVien WHERE IDGV = ?";
 $stmt = mysqli_prepare($conn, $sql);
+
+if (!$stmt) {
+    die("Loi SELECT: " . mysqli_error($conn));
+}
+
 mysqli_stmt_bind_param($stmt, "s", $id);
 mysqli_stmt_execute($stmt);
 
 $result = mysqli_stmt_get_result($stmt);
 $gv = mysqli_fetch_assoc($result);
+
 mysqli_stmt_close($stmt);
 
 if (!$gv) {
-    die("Giang vien khong ton tai!");
+    die("Khong tim thay giang vien co ma: " .
+        htmlspecialchars($id, ENT_QUOTES, "UTF-8"));
 }
 
-// Xoa giang vien khoi MySQL
+// Xoa du lieu trong MySQL
 $sql = "DELETE FROM GiangVien WHERE IDGV = ?";
 $stmt = mysqli_prepare($conn, $sql);
+
+if (!$stmt) {
+    die("Loi DELETE: " . mysqli_error($conn));
+}
+
 mysqli_stmt_bind_param($stmt, "s", $id);
 
 try {
@@ -39,26 +52,44 @@ try {
     $deleted = mysqli_stmt_affected_rows($stmt);
 } catch (mysqli_sql_exception $e) {
     mysqli_stmt_close($stmt);
-    header("Location: index.php?error=delete");
-    exit;
+    die("Loi xoa: " .
+        htmlspecialchars($e->getMessage(), ENT_QUOTES, "UTF-8"));
 }
 
 mysqli_stmt_close($stmt);
 
-// Xoa anh da upload neu co
-if ($deleted > 0 && !empty($gv["Image"])) {
+if ($deleted <= 0) {
+    die("Xoa that bai: Khong co du lieu nao duoc xoa!");
+}
 
-    $filename = basename($gv["Image"]);
-    $filepath = __DIR__ . "/uploads/" . $filename;
+// Xoa anh neu khong con giang vien nao su dung
+if (!empty($gv["Image"])) {
+    $sql = "SELECT COUNT(*) AS total
+            FROM GiangVien
+            WHERE Image = ?";
 
-    if (is_file($filepath)) {
-        unlink($filepath);
+    $stmt = mysqli_prepare($conn, $sql);
+    mysqli_stmt_bind_param($stmt, "s", $gv["Image"]);
+    mysqli_stmt_execute($stmt);
+
+    $result = mysqli_stmt_get_result($stmt);
+    $row = mysqli_fetch_assoc($result);
+
+    mysqli_stmt_close($stmt);
+
+    if ((int)$row["total"] === 0) {
+        $filename = basename($gv["Image"]);
+        $filepath = __DIR__ . "/uploads/" . $filename;
+
+        if (is_file($filepath)) {
+            unlink($filepath);
+        }
     }
 }
 
 mysqli_close($conn);
 
-// Quay ve danh sach
+// Chuyen ve trang danh sach
 header("Location: index.php?deleted=1");
 exit;
 ?>

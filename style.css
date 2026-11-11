@@ -269,8 +269,6 @@ a {
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
 
-/* HINH ANH GIANG VIEN */
-
 .gv-image {
     width: 120px;
     height: 140px;
@@ -278,4 +276,26 @@ a {
     border-radius: 10px;
     border: 2px solid #e2e8f0;
     box-shadow: 0 3px 10px rgba(0,0,0,0.12);
+}
+.delete-form {
+    display: inline;
+    margin: 0;
+}
+
+button.btn-delete {
+    border: none;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: inherit;
+}
+.delete-form {
+    display: inline;
+    margin: 0;
+}
+
+button.btn-delete {
+    border: none;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: inherit;
 }

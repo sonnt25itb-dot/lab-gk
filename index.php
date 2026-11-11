@@ -6,7 +6,7 @@ require_once "connect.php";
 $sql = "SELECT * FROM GiangVien ORDER BY IDGV ASC";
 $result = mysqli_query($conn, $sql);
 
-// Dem so giang vien
+// Dem tong so giang vien
 $total = mysqli_num_rows($result);
 ?>
 
@@ -16,6 +16,7 @@ $total = mysqli_num_rows($result);
     <meta charset="UTF-8">
     <meta name="viewport"
           content="width=device-width, initial-scale=1.0">
+
     <title>Quản lý giảng viên</title>
     <link rel="stylesheet" href="style.css">
 </head>
@@ -38,6 +39,24 @@ $total = mysqli_num_rows($result);
     <?php if (isset($_GET["success"])): ?>
         <div class="success-message">
             Thêm giảng viên thành công!
+        </div>
+    <?php endif; ?>
+
+    <?php if (isset($_GET["updated"])): ?>
+        <div class="success-message">
+            Cập nhật giảng viên thành công!
+        </div>
+    <?php endif; ?>
+
+    <?php if (isset($_GET["deleted"])): ?>
+        <div class="success-message">
+            Xóa giảng viên thành công!
+        </div>
+    <?php endif; ?>
+
+    <?php if (isset($_GET["error"])): ?>
+        <div style="color:red; margin:15px 0;">
+            Không thể thực hiện thao tác!
         </div>
     <?php endif; ?>
 
@@ -100,15 +119,28 @@ $total = mysqli_num_rows($result);
                         <td>
                             <div class="actions">
 
+                                <!-- NUT SUA -->
                                 <a class="btn-edit"
                                    href="edit.php?id=<?= urlencode($row["IDGV"]) ?>">
                                     Sửa
                                 </a>
 
-                                <a class="btn-delete"
-                                   href="delete.php?id=<?= urlencode($row["IDGV"]) ?>">
-                                    Xóa
-                                </a>
+                                <!-- NUT XOA -->
+                                <form action="delete.php"
+                                      method="POST"
+                                      class="delete-form"
+                                      onsubmit="return confirm('Bạn có chắc chắn muốn xóa giảng viên này không?');">
+
+                                    <input type="hidden"
+                                           name="IDGV"
+                                           value="<?= htmlspecialchars($row["IDGV"], ENT_QUOTES, 'UTF-8') ?>">
+
+                                    <button type="submit"
+                                            class="btn-delete">
+                                        Xóa
+                                    </button>
+
+                                </form>
 
                             </div>
                         </td>
@@ -139,15 +171,3 @@ $total = mysqli_num_rows($result);
 mysqli_free_result($result);
 mysqli_close($conn);
 ?>
-
-<?php if (isset($_GET["deleted"])): ?>
-    <div class="success-message">
-        Xóa giảng viên thành công!
-    </div>
-<?php endif; ?>
-
-<?php if (isset($_GET["error"])): ?>
-    <div style="color:red; margin:15px 0;">
-        Không thể xóa giảng viên!
-    </div>
-<?php endif; ?>
